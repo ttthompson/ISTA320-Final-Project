@@ -11,7 +11,8 @@ opts_chunk$set(echo = TRUE, message = FALSE)
 ```
 
 Data Description:
-These data comes from yahoo finance historical data which can be found at https://finance.yahoo.com/ or can be accessed via Python and the yahoo finance library yfinance. Because this data set spans only seven days, a daily price hisotry was not useful which is the lowest interval provided on the yahoo finance website directly. I was able to collect hourly pricing data for each stock using the yfinance and in accodance with pandas was able to export it to csv files. This process was executed using the ToCSV.py script which can be foud in this current working directory. Each CSV has seven total variables: Date, Openning Price, Hourly High, Hourly Low,  Closing Price, Adjustes Closing Price, and Volume. Once again, to emphasize, each of these prices were in the conteto of an hourly interval.
+These data comes from yahoo finance historical data which can be found at https://finance.yahoo.com/ or can be accessed via Python and the yahoo finance library yfinance. Because this data set spans only seven days, a daily price history was not useful which is the lowest interval provided on the yahoo finance website directly. I was able to collect hourly pricing data for each stock using the yfinance and in accordance with pandas was able to export it to csv files. This process was executed using the ToCSV.py script which can be found in this current working directory. Each CSV has seven total variables: Date, Opening Price, Hourly High, Hourly Low,  Closing Price, Adjusted Closing Price, and Volume. Once again, to emphasize, each of these prices were in the context of an hourly interval.
+
 ```{r}
 GME <- read_csv("GME.csv")
 AMC <- read_csv("AMC.csv")
@@ -47,10 +48,10 @@ df %>%
              y = Avg_Price,
              color = Volume)) +
   geom_line() +
-  labs(y = "Average Price",
+  labs(y = "Average Price of GME",
        x = "Hour",
        fill = "Volume",
-       title = "Distribution of GME Share Price and Volume From Jan 25 to Feb 2",
+       title = "Distribution of GME Share Price and Volume Over Time From Jan 25 to Feb 2",
        caption = "data dervied from Yahoo Finance") 
 
 df %>%
@@ -59,10 +60,10 @@ df %>%
              y = Avg_Price,
              color = Volume)) +
   geom_line() +
-  labs(y = "Average Price",
+  labs(y = "Average Price of AMC",
        x = "Hour",
        fill = "Volume",
-       title = "Distribution of AMC Share Price and Volume From Jan 25 to Feb 2",
+       title = "Distribution of AMC Share Price and Volume Over Time From Jan 25 to Feb 2",
        caption = "data dervied from Yahoo Finance")
 ```
 
@@ -83,7 +84,7 @@ df %>%
   facet_wrap(~Date, ncol = 3, scales = "free_x") +
   labs(y = "Average Percent Price Change from First hour of Jan 25",
        x = "",
-       title = "Comparison of AMC versus GME Percent Price Changes Accross Jan 25 to Feb 2",
+       title = "Comparison of AMC vs. GME Percent Price Changes Accross Jan 25 to Feb 2",
        caption = "data dervied from Yahoo Finance")
 ```
 
@@ -105,8 +106,7 @@ prices %>%
   geom_point() +
   geom_smooth(method= "lm") +
   labs(y = "AMC Price",
-       x = "GME Prices",
-       fill = "Volume",
+       x = "GME Price",
        title = "Distribution of AMC Share Price and Volume From Jan 25 to Feb 2",
        caption = "data dervied from Yahoo Finance")
 
