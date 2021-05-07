@@ -1,1 +1,125 @@
+---
+title: "ISTA 320 Spring 2021 Final Project"
+author: "Tingting Thompson"
+date: "Spring 2021"
+output: html_document
+---
+```{r}
+library(knitr)
+library(tidyverse)
+opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+Data Description:
+These data comes from yahoo finance historical data which can be found at https://finance.yahoo.com/ or can be accessed via Python and the yahoo finance library yfinance. Because this data set spans only seven days, a daily price hisotry was not useful which is the lowest interval provided on the yahoo finance website directly. I was able to collect hourly pricing data for each stock using the yfinance and in accodance with pandas was able to export it to csv files. This process was executed using the ToCSV.py script which can be foud in this current working directory. Each CSV has seven total variables: Date, Openning Price, Hourly High, Hourly Low,  Closing Price, Adjustes Closing Price, and Volume. Once again, to emphasize, each of these prices were in the conteto of an hourly interval.
+```{r}
+GME <- read_csv("GME.csv")
+AMC <- read_csv("AMC.csv")
+```
+
+At this point I was unable to authorize the use of twitteR function searchTwitter due to developer account approval issues.
+```{r}
+#gamestonks <- searchTwitter("gamestonk", since = "2021-01-25", until = "2021-02-02")
+```
+
+Clean and Adjust Data:
+For the most part, the data was already tidy. For other purposes, I derived variables such as the hour since the first hour, the average price for the hour based on the high and low, as well as percent changes in price based on the very first hour's price. The purpose of the percent was because the prices for GME were far greater than that of AMC. A final df was produced combining the two by rows and adding a Stock variable to label each instance by the stock name.
+```{r}
+GME$Hour <- as.numeric(rownames(GME))
+AMC$Hour <- as.numeric(rownames(AMC))
+GME$Avg_Price <- (GME$High + GME$Low)/2
+AMC$Avg_Price <- (AMC$High + AMC$Low)/2
+GMEFirstPrice <- GME$Avg_Price[which(GME$Hour == 1)]
+GME$Perc_Change_Avg_Price <- 100 * (GME$Avg_Price - GMEFirstPrice)/ GMEFirstPrice
+AMCFirstPrice <- AMC$Avg_Price[which(AMC$Hour == 1)]
+AMC$Perc_Change_Avg_Price <- 100 * (AMC$Avg_Price - AMCFirstPrice)/ AMCFirstPrice
+GME$Stock <- "GME"
+AMC$Stock <- "AMC"
+
+df <- rbind(GME, AMC)
+```
+
+Line graph of Share Price over Time:
+```{r}
+df %>%
+  filter(Stock == "GME") %>%
+  ggplot(aes(x= Hour,
+             y = Avg_Price,
+             color = Volume)) +
+  geom_line() +
+  labs(y = "Average Price",
+       x = "Hour",
+       fill = "Volume",
+       title = "Distribution of GME Share Price and Volume From Jan 25 to Feb 2",
+       caption = "data dervied from Yahoo Finance") 
+
+df %>%
+  filter(Stock == "AMC") %>%
+  ggplot(aes(x= Hour,
+             y = Avg_Price,
+             color = Volume)) +
+  geom_line() +
+  labs(y = "Average Price",
+       x = "Hour",
+       fill = "Volume",
+       title = "Distribution of AMC Share Price and Volume From Jan 25 to Feb 2",
+       caption = "data dervied from Yahoo Finance")
+```
+
+
+Comparative Bar plot of Daily Price:
+```{r fig.height=10, fig.width=10}
+
+df %>%
+  group_by(Date, Stock) %>%
+  summarize(Daily_Perc_Change_Avg_Price = mean(Perc_Change_Avg_Price)) %>%
+  ggplot(aes(x = Date, 
+             y = Daily_Perc_Change_Avg_Price, 
+             fill = Stock)) + 
+  ylim(-50,300) +
+  geom_text(aes(label=round(Daily_Perc_Change_Avg_Price,0)), 
+            position=position_dodge(width=0.9), vjust=-1) +
+  geom_col(position = "dodge") +
+  facet_wrap(~Date, ncol = 3, scales = "free_x") +
+  labs(y = "Average Percent Price Change from First hour of Jan 25",
+       x = "",
+       title = "Comparison of AMC versus GME Percent Price Changes Accross Jan 25 to Feb 2",
+       caption = "data dervied from Yahoo Finance")
+```
+
+
+
+
+Scatter Plot of GME vs AMC Stock Price w/ regression line overlay:
+```{r}
+GME$GMEPrice <- GME$Avg_Price
+AMC$AMCPrice <- AMC$Avg_Price
+prices <- data.frame(cbind(GME$GMEPrice,AMC$AMCPrice))
+colnames(prices) <- c("GME","AMC")
+```
+
+```{r}
+prices %>%
+  ggplot(aes(x = GME,
+             y = AMC,)) +
+  geom_point() +
+  geom_smooth(method= "lm") +
+  labs(y = "AMC Price",
+       x = "GME Prices",
+       fill = "Volume",
+       title = "Distribution of AMC Share Price and Volume From Jan 25 to Feb 2",
+       caption = "data dervied from Yahoo Finance")
+
+```
+
+```{r}
+prices %>%
+  lm(formula = GME ~ AMC) %>%
+  summary()
+```
+
+
+
+
+
 
